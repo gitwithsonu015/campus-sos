@@ -1,0 +1,113 @@
+openapi: 3.0.3
+info:
+  title: Campus SOS API
+  version: "0.1.0"
+  description: API for the Emergency Safety & Alert System prototype
+servers:
+  - url: http://localhost:3000/api
+paths:
+  /sos:
+    post:
+      summary: Send an SOS alert
+      tags:
+        - Alerts
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                message:
+                  type: string
+                lat:
+                  type: number
+                lng:
+                  type: number
+                accuracy:
+                  type: number
+                ts:
+                  type: string
+              required:
+                - lat
+                - lng
+      responses:
+        '200':
+          description: Alert created
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  alertId:
+                    type: string
+                  status:
+                    type: string
+        '400':
+          description: Bad request
+  /sos/cancel:
+    post:
+      summary: Cancel an active SOS (user-initiated)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                alertId:
+                  type: string
+              required:
+                - alertId
+      responses:
+        '200':
+          description: Cancelled
+  /alerts:
+    get:
+      summary: List alerts (filter by bbox or status)
+      parameters:
+        - in: query
+          name: status
+          schema:
+            type: string
+          description: status filter (active, acknowledged, cancelled)
+        - in: query
+          name: bbox
+          schema:
+            type: string
+          description: bbox as "minLng,minLat,maxLng,maxLat"
+      responses:
+        '200':
+          description: list of alerts
+  /alerts/{id}:
+    get:
+      summary: Get alert details
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Alert object
+  /alerts/{id}/acknowledge:
+    post:
+      summary: Acknowledge an alert (by responder/admin)
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Acknowledged
+components:
+  securitySchemes:
+    BearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+security:
+  - BearerAuth: []
